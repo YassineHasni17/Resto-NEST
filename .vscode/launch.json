@@ -1,0 +1,28 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "type": "node",
+        "autoAttachChildProcesses": true,
+        "restart": true,
+        "request": "attach",
+        "name": "Attach | Debug NestJS",
+        "port": 9229,
+        "skipFiles": ["<node_internals>/***"]
+      },
+      {
+        "name": "Launch | Debug NestJS",
+        "type": "node",
+        "autoAttachChildProcesses": true,
+        "restart": true,
+        "request": "launch",
+        "runtimeExecutable": "npm",
+        "runtimeArgs": [
+          "run",
+          "start:debug",
+        ],
+        "skipFiles": ["<node_internals>/***"],
+        "console": "integratedTerminal"
+      }
+    ]
+  }
