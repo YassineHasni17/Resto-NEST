@@ -1,34 +1,41 @@
 import { Injectable } from '@nestjs/common';
 import { TransactionalEmailsApi, SendSmtpEmail, TransactionalEmailsApiApiKeys } from '@getbrevo/brevo';
-import * as jwt from 'jsonwebtoken';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class EmailService {
-  // Clé API Brevo (la tienne ici, directement dans le code)
   private readonly brevoApiKey = process.env.BREVO_API_KEY!;
-
-  // Lien vers la page de modification de mot de passe sur le frontend
   private readonly frontendResetUrl = 'http://localhost:3000/reset-password';
 
-  // Clé secrète pour JWT
-  private readonly jwtSecret = 'SECRET_KEY';
+  constructor(
+    private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
+  ) { }
 
-  // Générer le token de réinitialisation
+
   generateResetToken(email: string): string {
-    return jwt.sign({ email }, this.jwtSecret, { expiresIn: '1h' });
+    const token = this.jwtService.sign(
+      { email },
+      {
+        secret: this.configService.get('JWT_SECRET'),
+        expiresIn: '1h',
+      }
+    );
+    return token;
   }
 
-  // Vérifier le token reçu par mail
+
   verifyResetToken(token: string): string {
     try {
-      const decoded: any = jwt.verify(token, this.jwtSecret);
+      const decoded: any = this.jwtService.verify(token, this.configService.get('JWT_SECRET'));
       return decoded.email;
     } catch (error) {
       throw new Error('Token invalide ou expiré');
     }
   }
 
-  // Envoi de l'email avec le lien de réinitialisation
+
   async sendEmail(to: string, subject: string, token: string): Promise<void> {
     const apiInstance = new TransactionalEmailsApi();
     apiInstance.setApiKey(
